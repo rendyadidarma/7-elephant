@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 struct userFriend
 {
@@ -23,11 +24,9 @@ userdata *createNode(char username[30], char password[30])
     temp->next = temp->prev = NULL;
     return temp;
 }
-
 void pushHead(char username[30], char password[30])
 {
     userdata *temp = createNode(username, password);
-
     if (!head)
     {
         head = tail = temp;
@@ -39,10 +38,10 @@ void pushHead(char username[30], char password[30])
         head = temp;
     }
 }
+
 void pushTail(char username[30], char password[30])
 {
     userdata *temp = createNode(username, password);
-
     if (!head)
     {
         head = tail = temp;
@@ -73,7 +72,7 @@ void printFriend(userdata **userNode) {
     userFriend *temp = (*userNode)->friendHead;
     int count = 1;
     while(temp) {
-        printf("%d %s\n",count++,temp->username);
+        printf("%d     %s\n",count++,temp->username);
         temp = temp->next;
     }
 }
@@ -88,7 +87,7 @@ void addFriend(char *user) {
         }
         temp = temp->next;
     }
-    
+
     printf("Which user you want to add? \n >>");
     char name[50];
     scanf("%s", name);
@@ -108,7 +107,7 @@ void addFriend(char *user) {
         temp->dummy = (userFriend*) malloc(sizeof(userFriend));
         strcpy(temp->dummy->username,user);
         temp->dummy->next = temp->dummy->prev = NULL;
-        
+
         if(!temp->inboxHead){ // inbox penerima kosong
             temp->inboxHead = temp->inboxTail = temp->dummy;
         } else { // inbox yg mau di add tidak kosong
@@ -136,6 +135,55 @@ void addFriend(char *user) {
     }
 }
 
+void removeFriend(char *user){
+    int flag = 0;
+    printf("[All Friends of %s]\n", user);
+    printf("No.   Username\n");
+    
+    userdata *curr = head;
+    while(strcmp(curr->username, user) != 0){
+        curr = curr->next;
+    }
+    printFriend(&curr);
+    printf("\n");
+    printf("Which user do you want to remove?\n");
+    char name[50];
+    scanf("%s", name);
+
+    if(!curr->friendHead){
+        return;
+    }
+    // else if(){
+    //     
+    // }
+    // else if(){
+    //     
+    // }
+    else{
+    userFriend *curr2 = curr->friendHead;
+    while(curr2){
+        if(strcmp(curr2->username, name) == 0){
+            flag = 1;
+            break;
+        }
+        curr2 = curr2->next;
+    }
+    if(!curr2){
+        printf("No friend with that name\n");
+        return;
+    }else{
+        curr2->prev->next = curr2->next;
+        curr2->next->prev = curr2->prev;
+        curr2->prev = curr2->next = NULL;
+        free(curr2);
+        curr2 = NULL;
+
+    }
+    }
+
+
+}
+
 userFriend *createDummy(userdata **node, char *string) {
     (*node)->dummy = (userFriend*) malloc(sizeof(userFriend));
     strcpy((*node)->dummy->username,string);
@@ -156,7 +204,7 @@ if(x == 1) {
         }
         temp->dummy = temp->dummy->next;
     }
-    
+
     if(isTrue) { // brarti ada
 
         userFriend *freeuserFriend = temp->dummy;
@@ -231,7 +279,7 @@ void inboxSee(char *user) {
             createFriend2->prev = temp->friendTail;
             temp->friendTail = createFriend2;
         } 
-        
+
         // temp = head;
         // while(strcmp(temp->username,user) != 0) {
         // temp = temp->next;
@@ -246,10 +294,11 @@ void viewReq(char *name) {
     while(strcmp(node->username,name) != 0) {
         node = node->next;
     }
-    
-    while(node->viewHead) {
-        printf("%s [pending]\n", node->viewHead);
-        node->viewHead = node->viewHead->next;
+
+    userFriend *tempView = node->viewHead;
+    while(tempView) {
+        printf("%s [pending]\n", tempView->username);
+        tempView = tempView->next;
     }
     printf("Press enter to back to menu.."); getchar();
 
@@ -280,7 +329,7 @@ void loginSuccess(char *user) {
                 addFriend(user);
                 break;
             case 2:
-
+                removeFriend(user);
                 break;
             case 3:
                 inboxSee(user);
@@ -311,29 +360,24 @@ int main()
         puts("[2] Login");
         puts("[3] Exit");
         printf("-----------------------------------------\nPress 0 and enter to abort an operation\n-----------------------------------------\n");
-
         int n;
         printf(">>");
         scanf("%d", &n);
         getchar();
-
         switch (n)
         {
         case 1:
         {
             puts("");
-
             char userTemp[255];
             char passTemp[255];
             int userFlag = 0;
-
             //validasi username
             while (userFlag != 1)
             {
                 printf("Please type in your username [lowercase || 1..24]:");
                 scanf("%[^\n]", userTemp);
                 getchar();
-
                 //variabel penanda jika ada huruf besar
                 int caps = 0;
                 for (int i = 0; userTemp[i] != '\0'; i++)
@@ -344,7 +388,6 @@ int main()
                     }
                 }
                 int len = strlen(userTemp);
-
                 //variabel penanda, username pernah digunakan sebelumnya
                 int dupe = 0;
                 userdata *temp = head;
@@ -359,7 +402,6 @@ int main()
                 if (caps == 0 && len <= 24 && dupe == 0)
                     userFlag = 1;
             }
-
             //flag buat password
             int passFlag = 0;
             while (passFlag != 1)
@@ -376,9 +418,7 @@ int main()
                         caps++;
                     }
                 }
-
                 int len = strlen(passTemp);
-
                 //variabel penanda, password pernah digunakan sebelumnya
                 int dupe = 0;
                 userdata *temp = head;
@@ -394,7 +434,6 @@ int main()
                     passFlag = 1;
             }
             puts("password validasi");
-
             if (passFlag == 1 && userFlag == 1)
             {
                 pushHead(userTemp, passTemp);
@@ -407,14 +446,12 @@ int main()
                 getchar();
                 break;
             }
-
             break;
         }
-
         case 2:
         {
             // login
-            
+
             int flag = 0;
             char username[50];
             char password[50];
@@ -440,7 +477,33 @@ int main()
         if(flag == 1) {
             printf("Login Success\nPress Enter to Continue..");
             getchar();getchar();
+            clock_t t;
+			t = clock();
             loginSuccess(username);
+            t = clock() - t;
+        	int time_taken = ((int)t)/CLOCKS_PER_SEC;
+        	int h = 0, m = 0, s = time_taken;
+        	if(s > 60){
+        		int temp = s/60;
+        		m = temp;
+        		s = s - (temp * 60);
+			}
+			if(m > 60){
+				int temp = m/60;
+				h = temp;
+				m = m - (temp * 60);
+			}
+			printf("you used this program for");
+			if(h != 0){
+				printf(" %d hours", h);
+			}
+			if(m != 0){
+				printf(" %d minutes", m);
+			}
+			if(s != 0){
+				printf(" %d seconds", s);
+			}
+			printf("\n");
         }
             break;
         }
