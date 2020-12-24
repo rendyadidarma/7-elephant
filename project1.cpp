@@ -194,7 +194,8 @@ userFriend *createDummy(userdata **node, char *string) {
 void popSearch(userdata **node, char *name, int x ) {// name = yang mau dihapus
 // node ni yang pointer yg letaknya ditempat mau kita hapus
 if(x == 1) {
-    userdata *temp;
+
+    userdata *temp = *node;
     temp->dummy = (*node)->inboxHead;
     int isTrue = 0;
     while(temp->dummy) {
@@ -204,24 +205,61 @@ if(x == 1) {
         }
         temp->dummy = temp->dummy->next;
     }
-
+    
     if(isTrue) { // brarti ada
 
         userFriend *freeuserFriend = temp->dummy;
-        if(temp->inboxHead == temp->inboxTail) {
+        if(strcmp(temp->inboxHead->username,temp->inboxTail->username) == 0) {
             temp->inboxHead = temp->inboxTail = NULL;
-        } else if (temp->dummy == temp->inboxHead) {
+        } else if (strcmp(temp->dummy->username,temp->inboxHead->username) == 0) {
             temp->inboxHead = temp->inboxHead->next;
+            temp->inboxHead->next = NULL;
             temp->inboxHead->prev = NULL;
-        } else if( temp->dummy == temp->inboxTail) {
+        } else if(strcmp(temp->dummy->username,temp->inboxTail->username) == 0) {
             temp->inboxTail = temp->inboxTail->prev;
+            temp->inboxTail->next->prev = NULL;
             temp->inboxTail->next = NULL;
         } else {
             temp->dummy->prev->next = temp->dummy->next;
             temp->dummy->next->prev = temp->dummy->prev;
-        } free(freeuserFriend);
+            temp->dummy->next = NULL;
+            temp->dummy->prev = NULL;
+        }
+     free(freeuserFriend);
     }
 } else if(x == -1) { // pop view name
+    userdata *temp = *node;
+    temp->dummy = (*node)->viewHead;
+    int isTrue = 0;
+    while(temp->dummy) {
+        if(strcmp(name,temp->dummy->username) == 0) {
+            isTrue = 1;
+            break;
+        }
+        temp->dummy = temp->dummy->next;
+    }
+    
+    if(isTrue) { // brarti ada
+
+        userFriend *freeuserFriend = temp->dummy;
+        if(strcmp(temp->viewHead->username,temp->viewTail->username) == 0) {
+            temp->viewHead = temp->viewTail = NULL;
+        } else if (strcmp(temp->dummy->username,temp->viewHead->username) == 0) {
+            temp->viewHead = temp->viewHead->next;
+            temp->viewHead->next = NULL;
+            temp->viewHead->prev = NULL;
+        } else if(strcmp(temp->dummy->username,temp->viewTail->username) == 0) {
+            temp->viewTail = temp->viewTail->prev;
+            temp->viewTail->next->prev = NULL;
+            temp->viewTail->next = NULL;
+        } else {
+            temp->dummy->prev->next = temp->dummy->next;
+            temp->dummy->next->prev = temp->dummy->prev;
+            temp->dummy->next = NULL;
+            temp->dummy->prev = NULL;
+        }
+     free(freeuserFriend);
+    }
 
 }
 }
@@ -280,12 +318,16 @@ void inboxSee(char *user) {
             temp->friendTail = createFriend2;
         } 
 
-        // temp = head;
-        // while(strcmp(temp->username,user) != 0) {
-        // temp = temp->next;
-        // }
-        // popSearch(&temp,name,1);
-
+        temp = head;
+        while(strcmp(temp->username,user) != 0) {
+        temp = temp->next;
+        }
+        popSearch(&temp,name,1);
+        temp = head;
+        while(strcmp(temp->username,name) != 0) {
+            temp = temp->next;
+        }
+        popSearch(&temp,user,-1);
     }
 }
 
